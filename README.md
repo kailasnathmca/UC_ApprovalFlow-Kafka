@@ -1905,3 +1905,261 @@ mvn -pl notification-service spring-boot:run
 
 (Heads-up: Kafka UI from Docker Compose is at `http://localhost:8080`, unrelated to Swagger.)
 ##########################################################################################################
+how the kafka flow works in this project
+
+Here’s the Kafka flow in this project—short, practical, and mapped to the code you have.
+
+---
+
+# What gets created
+
+**Topics (from `proposal-service` → `KafkaConfig`):**
+
+* `proposal-events` (3 partitions) — JSON **domain events**
+* `proposal-events.DLT` (3 partitions) — **dead-letter** for failed records
+* `audit-logs` (1 partition) — plain-text **audit lines**
+
+**Event payload type (shared POJO):**
+
+```java
+class ProposalEvent {
+  String id;                 // UUID
+  ProposalEventType type;    // SUBMITTED, STEP_APPROVED, ...
+  Long proposalId;
+  Map<String,Object> payload;// small details (role, approver, nextStep...)
+  OffsetDateTime at;         // event time
+}
+```
+
+---
+
+# Who produces
+
+**`proposal-service`**
+
+* File: `proposal-service/kafka/EventPublisher.java`
+* Sends **JSON** to `proposal-events` and a **string** line to `audit-logs`
+* **Key** = `String.valueOf(proposalId)` → guarantees **per-proposal ordering** (all events for one proposal land in the same partition)
+
+Emitted when:
+
+* `POST /api/proposals/{id}/submit` → `PROPOSAL_SUBMITTED`
+* `POST /api/proposals/{id}/approve` → `STEP_APPROVED` (or `PROPOSAL_APPROVED` at final step)
+* `POST /api/proposals/{id}/reject` → `PROPOSAL_REJECTED`
+
+---
+
+# Who consumes (fan-out)
+
+Each service has its **own consumer group**, so **all** see **every** event:
+
+* **`audit-service`** (`groupId = audit-service`)
+  `kafka/ProposalEventListener.java` → persists to H2 (`AuditEntry`) → query via `GET /api/audit`
+
+* **`notification-service`** (`groupId = notification-service`)
+  `kafka/NotificationListener.java` → logs that it would send email/SMS
+
+* **`proposal-service`** (optional self-listener)
+  `kafka/ProposalEventConsumer.java` → just logs events for debugging
+
+---
+
+# Reliability: retries & DLT
+
+Configured in each service’s `KafkaConfig`:
+
+* **Retry**: `FixedBackOff(1000ms, 3)` on listener errors
+* **After retries fail**: message is published to **`proposal-events.DLT`** by `DeadLetterPublishingRecoverer`
+* Partition is preserved when sent to DLT (helps with ordering analysis)
+* Delivery semantics are **at-least-once**; make consumers idempotent if they cause side-effects
+
+---
+
+# End-to-end example (approve path)
+
+```
+Client
+  POST /api/proposals/1/approve  { "approver":"john.doe", "comments":"OK" }
+
+proposal-service
+  ApprovalWorkflowService.approve(...)  // updates JPA state
+  ↓
+  EventPublisher.publish(
+     ProposalEvent{ type=STEP_APPROVED, proposalId=1, payload={role, approver, nextStep} }
+  )  → topic: proposal-events, key: "1"
+  also → "audit-logs" (plain text line)
+
+Kafka
+  proposal-events (3 partitions) -- key "1" puts this record on one partition deterministically
+
+Consumers (different groups → all receive it)
+  audit-service@partX        → save AuditEntry in H2
+  notification-service@partX → log "would notify STEP_APPROVED for 1"
+  (optional) proposal-service logs the event too
+```
+
+---
+
+# Where to look in the code
+
+* **Producer & topics**:
+  `proposal-service/config/KafkaConfig.java`
+  `proposal-service/kafka/EventPublisher.java`
+
+* **When events fire**:
+  `proposal-service/service/ApprovalWorkflowService.java`
+  (methods `submit`, `approve`, `reject`)
+
+* **Consumers**:
+  `audit-service/kafka/ProposalEventListener.java`
+  `notification-service/kafka/NotificationListener.java`
+  `proposal-service/kafka/ProposalEventConsumer.java` (optional)
+
+---
+
+# See it live
+
+1. Start Kafka:
+
+```bash
+docker compose up -d
+```
+
+2. Run services (separate terminals):
+
+```bash
+mvn -pl proposal-service spring-boot:run
+mvn -pl audit-service spring-boot:run
+mvn -pl notification-service spring-boot:run
+```
+
+3. Hit APIs and watch messages:
+
+```bash
+# create → submit → approve
+curl -s -X POST http://localhost:8081/api/proposals \
+  -H "Content-Type: application/json" \
+  -d '{"title":"IPO Fund","applicantName":"Riya","amount":150000,"description":"New fund"}'
+curl -s -X POST http://localhost:8081/api/proposals/1/submit
+curl -s -X POST http://localhost:8081/api/proposals/1/approve \
+  -H "Content-Type: application/json" -d '{"approver":"john.doe","comments":"OK"}'
+```
+
+4. Inspect in **Kafka UI**: `http://localhost:8080`
+
+  * `proposal-events` for JSON events
+  * `audit-logs` for readable lines
+  * `proposal-events.DLT` for any dead letters
+
+5. Swagger UIs:
+   notification-service API
+   http://localhost:8083/swagger-ui/index.html
+   audit-service API
+   http://localhost:8082/swagger-ui/index.html
+   proposal-service API
+   http://localhost:8081/swagger-ui/index.html
+6. 
+(Optional CLI watchers via Docker):
+
+```bash
+docker compose exec kafka kafka-console-consumer \
+  --bootstrap-server kafka:29092 --topic proposal-events --from-beginning \
+  --property print.key=true --property key.separator=" : "
+
+docker compose exec kafka kafka-console-consumer \
+  --bootstrap-server kafka:29092 --topic proposal-events.DLT --from-beginning
+```
+
+---
+
+# Notes on scaling & ordering
+
+* `proposal-events` has **3 partitions** → max parallelism per consumer group = 3
+* Listeners use **concurrency 2** (extra threads but capped by assigned partitions)
+* **Ordering is guaranteed per key** (we use `proposalId`), so each proposal’s history is strictly ordered
+
+---
+
+If you want, I can add: a tiny **DLT replayer**, **email provider integration**, or **transactional outbox** to make DB+Kafka writes atomic.
+# topics: proposal-events 
+
+Services:
+
+proposal-service → producer (publishes JSON ProposalEvents + text audit lines)
+
+audit-service → consumer (stores audit trail)
+
+notification-service → consumer (logs “email/SMS” notifications)
+
+Kafka UI: http://localhost:8080 (from docker compose)
+
+# DLT = Dead Letter Topic** in Kafka.
+
+### What it is (in plain words)
+
+A **DLT** is a special Kafka topic where messages are sent **after a consumer keeps failing** to process them (even after configured retries). It lets you **quarantine bad records** so your stream keeps moving, while you **inspect, fix, and optionally replay** those messages later.
+
+### How it works in your Investment Proposal system
+
+* Main topic: `proposal-events`
+* DLT: **`proposal-events.DLT`**
+* If a consumer (e.g., `audit-service`) throws errors repeatedly (DB constraint, deserialization, NPE), Spring Kafka’s **`DefaultErrorHandler`** hands the record to a **`DeadLetterPublishingRecoverer`**, which publishes it to `proposal-events.DLT` (same partition as the original).
+* The DLT record keeps:
+
+  * the **original key/value** (so replays preserve ordering per `proposalId`)
+  * **metadata headers** (original topic/partition/offset and exception info) to aid debugging.
+
+### Why it’s useful
+
+* **Prevents pipeline stalls**: one “poison” message doesn’t block the whole partition.
+* **Observability & recovery**: you can see what failed, fix data/code, then **replay**.
+
+### Where to see it
+
+* **Kafka UI** (from your docker-compose): open `proposal-events.DLT`
+* CLI:
+
+  ```bash
+  docker compose exec kafka kafka-console-consumer \
+    --bootstrap-server kafka:29092 \
+    --topic proposal-events.DLT --from-beginning \
+    --property print.key=true --property key.separator=" : "
+  ```
+
+### The config you already have (essentials)
+
+```java
+// in KafkaConfig (each service)
+DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(dltKafkaTemplate,
+  (rec, ex) -> new TopicPartition(rec.topic() + ".DLT", rec.partition()));
+
+DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+// 3 retries, 1s apart; then publish to proposal-events.DLT
+factory.setCommonErrorHandler(handler);
+```
+
+### Replaying from the DLT (safe trickle replay)
+
+```java
+// Example: re-publish DLT records back to the main topic after you fixed the bug/data
+@Component
+public class DltReplayer {
+  private final KafkaTemplate<String, ProposalEvent> template;
+  public DltReplayer(KafkaTemplate<String, ProposalEvent> template){ this.template = template; }
+
+  @KafkaListener(topics = "proposal-events.DLT", groupId = "replayer")
+  public void reprocess(ProposalEvent ev,
+      @org.springframework.messaging.handler.annotation.Header(
+        org.springframework.kafka.support.KafkaHeaders.RECEIVED_MESSAGE_KEY) String key) {
+
+    // add guardrails as needed (filters, time window, manual trigger)
+    template.send("proposal-events", key, ev);
+  }
+}
+```
+
+### Tips
+
+* Set **retention** on DLT long enough for investigation.
+* Make consumers **idempotent** (e.g., `audit-service` dedup by `eventId`) so replays are safe.
+* Treat DLT volume spikes as alerts: they often indicate schema mismatches or downstream outages.

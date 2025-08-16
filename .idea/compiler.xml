@@ -13,6 +13,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="kafka-features-tutorial-demos" target="17" />
       <module name="proposal-service (1)" target="17" />
       <module name="proposal-service2" target="17" />
     </bytecodeTargetLevel>
@@ -22,6 +23,7 @@
       <module name="audit-service" options="-parameters" />
       <module name="ipm-common" options="-parameters" />
       <module name="ipm-microservices" options="" />
+      <module name="kafka-features-tutorial-demos" options="-parameters" />
       <module name="notification-service" options="-parameters" />
       <module name="proposal-service" options="-parameters" />
       <module name="proposal-service (1)" options="-parameters" />
