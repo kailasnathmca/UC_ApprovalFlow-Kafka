@@ -1,0 +1,42 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:proposalservice;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    username: sa
+    password: ""
+    driverClassName: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true  # <— run data.sql AFTER JPA schema
+    sql:
+      init:
+        mode: always
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: proposal-service
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    producer:
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+
+# Default approval chain if client doesn't provide one
+ipm:
+  default-approval-chain: "PEER_REVIEW,MANAGER_APPROVAL,COMPLIANCE"
+
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: WARN
+    com.uc: DEBUG

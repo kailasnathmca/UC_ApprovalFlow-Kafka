@@ -1,0 +1,8 @@
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\service\AuditService.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\controller\AuditController.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\config\KafkaConfig.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\config\SwaggerConfig.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\repository\AuditRepository.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\entity\AuditEntry.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\kafka\ProposalEventListener.java
+C:\workspace-intellij\UC_ApprovalFlow-Kafka\audit-service\src\main\java\com\uc\auditservice\Application.java

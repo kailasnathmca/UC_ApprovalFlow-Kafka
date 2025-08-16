@@ -1854,4 +1854,54 @@ mvn -pl notification-service spring-boot:run
 
 (Heads-up: Kafka UI from Docker Compose is at `http://localhost:8080`, unrelated to Swagger.)
 
-________________________________________________________________________________________________________
+______________________________________________________________________________________________________________________
+
+#################################################################################################################
+
+Here’s how to open Swagger for each service (once they’re running):
+
+* Proposal Service → `http://localhost:8081/swagger-ui/index.html`
+  OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+
+* Audit Service → `http://localhost:8082/swagger-ui/index.html`
+  OpenAPI JSON: `http://localhost:8082/v3/api-docs`
+
+* Notification Service → `http://localhost:8083/swagger-ui/index.html`
+  OpenAPI JSON: `http://localhost:8083/v3/api-docs`
+
+### Quick steps
+
+1. Start Kafka stack:
+
+```bash
+docker compose up -d
+```
+
+2. Start each service in its own terminal:
+
+```bash
+mvn -pl proposal-service spring-boot:run
+mvn -pl audit-service spring-boot:run
+mvn -pl notification-service spring-boot:run
+```
+
+3. Visit the Swagger URLs above in your browser.
+
+### If Swagger doesn’t load (404)
+
+* Make sure each service includes the dependency:
+  `org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0`
+* Ensure the app actually started on the expected port (8081/8082/8083).
+* We also added a `SwaggerConfig` bean in each service—keep it as-is.
+* If you want a custom path (e.g., `/docs`), add this to the service’s `application.yml`:
+
+  ```yaml
+  springdoc:
+    swagger-ui:
+      path: /docs
+  ```
+
+  Then open `http://localhost:<port>/docs`.
+
+(Heads-up: Kafka UI from Docker Compose is at `http://localhost:8080`, unrelated to Swagger.)
+##########################################################################################################

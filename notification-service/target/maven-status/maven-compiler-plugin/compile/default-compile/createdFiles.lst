@@ -1,0 +1,5 @@
+com\uc\notificationservice\Application.class
+com\uc\notificationservice\config\KafkaConfig.class
+com\uc\notificationservice\config\SwaggerConfig.class
+com\uc\notificationservice\controller\HealthController.class
+com\uc\notificationservice\kafka\NotificationListener.class

@@ -1,0 +1,8 @@
+com\uc\auditservice\service\AuditService.class
+com\uc\auditservice\Application.class
+com\uc\auditservice\config\KafkaConfig.class
+com\uc\auditservice\kafka\ProposalEventListener.class
+com\uc\auditservice\entity\AuditEntry.class
+com\uc\auditservice\config\SwaggerConfig.class
+com\uc\auditservice\repository\AuditRepository.class
+com\uc\auditservice\controller\AuditController.class
