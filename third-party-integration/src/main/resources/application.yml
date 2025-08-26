@@ -1,0 +1,52 @@
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# === Third-party service base URL ===
+thirdparty:
+  base-url: https://api.example.com   # <-- change to vendor URL
+  mtls:
+    enabled: false
+    key-store: classpath:client.p12   # or absolute path /etc/ssl/client.p12
+    key-store-password: changeit
+    trust-store: classpath:truststore.p12
+    trust-store-password: changeit
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          risk:
+            provider: risk-provider
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+            authorization-grant-type: client_credentials
+            scope: risk.read
+        provider:
+          risk-provider:
+            token-uri: https://idp.example.com/oauth2/token
+
+resilience4j:
+  retry:
+    instances:
+      riskApi:
+        max-attempts: 3
+        wait-duration: 300ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2.0
+  circuitbreaker:
+    instances:
+      riskApi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
