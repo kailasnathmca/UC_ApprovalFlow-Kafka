@@ -6,10 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="proposal-service" />
-        <module name="audit-service" />
+        <module name="ipm-audit-service" />
         <module name="ipm-common" />
-        <module name="notification-service" />
+        <module name="ipm-notification-service" />
+        <module name="ipm-proposal-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -21,12 +21,12 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="audit-service" options="-parameters" />
+      <module name="ipm-audit-service" options="-parameters" />
       <module name="ipm-common" options="-parameters" />
       <module name="ipm-microservices" options="-parameters" />
+      <module name="ipm-notification-service" options="-parameters" />
+      <module name="ipm-proposal-service" options="-parameters" />
       <module name="kafka-features-tutorial-demos" options="-parameters" />
-      <module name="notification-service" options="-parameters" />
-      <module name="proposal-service" options="-parameters" />
       <module name="proposal-service (1)" options="-parameters" />
       <module name="proposal-service2" options="-parameters" />
       <module name="tutorial-java-features-demos" options="-parameters" />

@@ -29,9 +29,9 @@
 
     <modules>
         <module>ipm-common</module>
-        <module>proposal-service</module>
-        <module>audit-service</module>
-        <module>notification-service</module>
+        <module>ipm-proposal-service</module>
+        <module>ipm-audit-service</module>
+        <module>ipm-notification-service</module>
     </modules>
 
     <dependencyManagement>
