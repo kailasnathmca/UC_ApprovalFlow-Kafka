@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uc-ipm-proposal
+  namespace: argocd
+spec:
+  project: ucipm
+  source:
+    repoURL: https://github.com/your-org/uc-ipm.git
+    targetRevision: main
+    path: charts/proposal-service
+    helm:
+      valueFiles:
+        - ../../infra/values/proposal-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: uc-ipm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

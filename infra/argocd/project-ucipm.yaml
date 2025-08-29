@@ -1,0 +1,11 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ucipm
+  namespace: argocd
+spec:
+  destinations:
+    - namespace: uc-ipm
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://github.com/your-org/uc-ipm*   # code and/or infra repos

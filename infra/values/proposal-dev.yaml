@@ -1,0 +1,7 @@
+image:
+  repository: docker.io/your-docker-id/proposal-service
+  tag: "dev"
+replicaCount: 1
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: dev
