@@ -1,0 +1,14 @@
+image:
+  repository: your-docker-id/proposal-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: k8s
