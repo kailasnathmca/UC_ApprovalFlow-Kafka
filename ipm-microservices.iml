@@ -2,6 +2,7 @@
 <module version="4">
   <component name="AdditionalModuleElements">
     <content url="file://$MODULE_DIR$" dumb="true">
+      <sourceFolder url="file://$MODULE_DIR$/ipm-third-party-integration" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tutorial-java-features-demos/src" isTestSource="false" />
     </content>
   </component>
