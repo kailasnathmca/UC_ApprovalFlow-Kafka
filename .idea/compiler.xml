@@ -13,6 +13,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="ipm-third-party-integration" target="17" />
       <module name="kafka-features-tutorial-demos" target="17" />
       <module name="proposal-service (1)" target="17" />
       <module name="proposal-service2" target="17" />
@@ -26,6 +27,7 @@
       <module name="ipm-microservices" options="-parameters" />
       <module name="ipm-notification-service" options="-parameters" />
       <module name="ipm-proposal-service" options="-parameters" />
+      <module name="ipm-third-party-integration" options="-parameters" />
       <module name="kafka-features-tutorial-demos" options="-parameters" />
       <module name="proposal-service (1)" options="-parameters" />
       <module name="proposal-service2" options="-parameters" />
