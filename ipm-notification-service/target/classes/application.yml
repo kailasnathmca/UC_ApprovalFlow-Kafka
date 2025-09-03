@@ -1,0 +1,19 @@
+server:
+  port: 8083
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+
+logging:
+  level:
+    root: INFO
+    com.uc: DEBUG
+    org.apache.kafka: WARN
