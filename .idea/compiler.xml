@@ -7,13 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ipm-audit-service" />
+        <module name="ipm-third-party-integration" />
         <module name="ipm-common" />
         <module name="ipm-notification-service" />
         <module name="ipm-proposal-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ipm-third-party-integration" target="17" />
       <module name="kafka-features-tutorial-demos" target="17" />
       <module name="proposal-service (1)" target="17" />
       <module name="proposal-service2" target="17" />

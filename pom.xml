@@ -32,6 +32,7 @@
         <module>ipm-proposal-service</module>
         <module>ipm-audit-service</module>
         <module>ipm-notification-service</module>
+        <module>ipm-third-party-integration</module>
     </modules>
 
     <dependencyManagement>
