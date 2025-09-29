@@ -36,7 +36,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationListener {
 
-    // Logger instance for writing logs.
     // Good practice for tracking consumed messages and debugging.
     private static final Log log = LogFactory.getLog(NotificationListener.class);
 
