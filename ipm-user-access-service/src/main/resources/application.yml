@@ -1,0 +1,12 @@
+# Basic Keycloak configuration for the demos. Values are intentionally
+# simplistic and would need to be adjusted for a real deployment.
+keycloak:
+  realm: master
+  resource: demo-app
+  bearer-only: true
+  auth-server-url: http://localhost:8080
+  ssl-required: none
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
